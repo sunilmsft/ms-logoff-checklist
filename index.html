@@ -136,12 +136,12 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
   display: flex; justify-content: space-between; align-items: center;
 }
 .phase-header .phase-count { font-weight: 400; font-size: 0.78rem; opacity: 0.8; }
-.phase-now { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-.phase-pre-trip { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.phase-note { font-size: 0.76rem; font-weight: 400; opacity: 0.75; margin-top: 0.1rem; }
+.phase-wk1 { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.phase-wk2 { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.phase-wk3 { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .phase-india { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 .phase-post { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-
-.phase-note { font-size: 0.76rem; font-weight: 400; opacity: 0.75; margin-top: 0.15rem; }
 
 .sync-notice {
   background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
@@ -200,14 +200,14 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
   <div class="sync-notice" id="syncNotice">
     <span class="icon">💡</span>
     <div class="text">
-      <strong>How this works:</strong> Check items off as you go — saved in this browser automatically. Use <strong>Export</strong> to back up or move to another device. Priorities: 🔴 before India trip · 🟡 before last day · ⚪ can do after.
+      <strong>Both tabs share the same checklist.</strong> Check something off in either view — it updates everywhere. Use <strong>Export</strong> to back up or sync to another device. Priorities: 🔴 this week · 🟡 before last day · ⚪ can wait.
     </div>
     <button class="dismiss" onclick="dismissNotice()" title="Dismiss">✕</button>
   </div>
 
   <div class="view-tabs">
     <button class="active" data-view="categories" onclick="switchView('categories')">📂 By Category</button>
-    <button data-view="timeline" onclick="switchView('timeline')">📅 Work-Back Plan</button>
+    <button data-view="timeline" onclick="switchView('timeline')">📅 Weekly Plan</button>
   </div>
 
   <div id="viewCategories">
@@ -237,16 +237,17 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
     <textarea id="modalNote" placeholder="Additional details, links, etc."></textarea>
     <label>Priority</label>
     <select id="modalPriority">
-      <option value="high">🔴 High — before India trip (Jun 25)</option>
-      <option value="medium">🟡 Medium — before last day (Jul 1)</option>
-      <option value="low">⚪ Low — can do after</option>
+      <option value="high">🔴 High — this week</option>
+      <option value="medium">🟡 Medium — before last day</option>
+      <option value="low">⚪ Low — can wait</option>
     </select>
-    <label>Timeline phase</label>
+    <label>When to do it</label>
     <select id="modalPhase">
-      <option value="now">🚨 Now – Jun 24 (before India)</option>
-      <option value="pre-trip">✈️ Jun 22–24 (final prep)</option>
-      <option value="india">🇮🇳 Jun 25 – Jul 23 (India / remote)</option>
-      <option value="post">🏠 Jul 23+ (back home)</option>
+      <option value="wk1">Week 1: Jun 8–14 (this week!)</option>
+      <option value="wk2">Week 2: Jun 15–21</option>
+      <option value="wk3">Week 3: Jun 22–24 (last days before India)</option>
+      <option value="india">In India: Jun 25 – Jul 23 (remote only)</option>
+      <option value="post">Back home: Jul 23+</option>
     </select>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -256,7 +257,7 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
 </div>
 
 <script>
-const STORAGE_KEY = 'ms-logoff-checklist-v2';
+const STORAGE_KEY = 'ms-logoff-checklist-v3';
 
 document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
@@ -264,86 +265,77 @@ const DEFAULT_DATA = [
   {
     id: 'cat-1', name: '💻 IT & Device Transition', collapsed: false,
     items: [
-      { id: 'i1', text: 'Set local administrator password on current laptop', note: 'So you retain access after corp account disabled', priority: 'high', done: false, phase: 'now' },
-      { id: 'i2', text: 'Back up OneDrive files to personal storage', note: 'Photos, personal docs, anything not already on personal drives', priority: 'high', done: false, phase: 'now' },
-      { id: 'i3', text: 'Export OneNote notebooks (personal sections)', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i4', text: 'Export browser bookmarks & saved passwords', note: 'Edge profile → export to personal browser', priority: 'high', done: false, phase: 'now' },
-      { id: 'i5', text: 'Download any personal emails/attachments from Outlook', note: '', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i6', text: 'Remove personal accounts from work devices', note: 'Personal Google, Apple, etc.', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i7', text: 'Return test laptops', note: 'All loaner/test devices back to IT', priority: 'high', done: false, phase: 'now' },
-      { id: 'i8', text: 'Return primary laptop & equipment', note: 'Schedule with IT — do AFTER new laptop is fully set up', priority: 'high', done: false, phase: 'pre-trip' },
-      { id: 'i9', text: 'Clean up Millennium office of personal items', note: 'Desk, drawers, any personal stuff', priority: 'high', done: false, phase: 'now' },
-      { id: 'i10', text: 'Return badge & physical access items', note: '', priority: 'high', done: false, phase: 'pre-trip' },
+      { id: 'i1', text: 'Set local administrator password on current laptop', note: 'So you retain access after corp account disabled', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i2', text: 'Back up OneDrive files to personal storage', note: 'Photos, personal docs, anything not already on personal drives', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i3', text: 'Export OneNote notebooks (personal sections)', note: '', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i4', text: 'Export browser bookmarks & saved passwords', note: 'Edge profile → export to personal browser', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i5', text: 'Download any personal emails/attachments from Outlook', note: '', priority: 'medium', done: false, phase: 'wk2' },
+      { id: 'i6', text: 'Remove personal accounts from work devices', note: 'Personal Google, Apple, etc.', priority: 'medium', done: false, phase: 'wk3' },
+      { id: 'i7', text: 'Return test laptops', note: 'All loaner/test devices back to IT', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i8', text: 'Return primary laptop & equipment', note: 'Only AFTER new laptop is fully set up & verified', priority: 'high', done: false, phase: 'wk3' },
+      { id: 'i9', text: 'Clean up Millennium office of personal items', note: 'Desk, drawers, any personal stuff', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i10', text: 'Return badge & physical access items', note: '', priority: 'high', done: false, phase: 'wk3' },
     ]
   },
   {
     id: 'cat-2', name: '🛠️ New Laptop & Personal Setup', collapsed: false,
     items: [
-      { id: 'i40', text: 'Set up new laptop with personal Microsoft account', note: 'Windows Hello, OneDrive personal, sign in everywhere', priority: 'high', done: false, phase: 'now' },
-      { id: 'i41', text: 'Install VS Code on new laptop', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i42', text: 'Buy GitHub Copilot subscription (Individual plan)', note: 'Currently using MS unlimited — will lose Jul 1. $10/mo or $100/yr', priority: 'high', done: false, phase: 'now' },
-      { id: 'i43', text: 'Set up VS Code + GitHub Copilot & verify working', note: 'Match extensions, settings sync, themes from current setup', priority: 'high', done: false, phase: 'now' },
-      { id: 'i44', text: 'Buy password manager subscription', note: '1Password ($3/mo) or Bitwarden (free/premium)', priority: 'high', done: false, phase: 'now' },
-      { id: 'i45', text: 'Set up password manager across ALL devices', note: 'Laptop, phone, tablet — import existing passwords, verify working', priority: 'high', done: false, phase: 'now' },
-      { id: 'i46', text: 'Get M365 Personal/Family from Microsoft Store', note: 'Use employee discount while still active! Word, Excel, Outlook', priority: 'high', done: false, phase: 'now' },
-      { id: 'i47', text: 'Clone all Git repos & install dev tools on new laptop', note: 'Node, Python, Git config, SSH keys, project dependencies', priority: 'high', done: false, phase: 'now' },
-      { id: 'i48', text: 'Ensure all personal data & services running on new laptop', note: 'OneDrive syncing, browser profiles, all accounts signed in', priority: 'high', done: false, phase: 'now' },
-      { id: 'i49', text: 'Full end-to-end test: build, run, push projects', note: 'Can you do everything on new laptop that you do on current one?', priority: 'high', done: false, phase: 'pre-trip' },
+      { id: 'i40', text: 'Set up new laptop with personal Microsoft account', note: 'Windows Hello, OneDrive personal, sign in everywhere', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i41', text: 'Install VS Code on new laptop', note: '', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i42', text: 'Buy GitHub Copilot subscription (Individual plan)', note: 'Currently using MS unlimited — $10/mo or $100/yr', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i43', text: 'Set up VS Code + GitHub Copilot & verify working', note: 'Match extensions, settings sync, themes from current setup', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i44', text: 'Buy password manager subscription', note: '1Password ($3/mo) or Bitwarden (free/premium)', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i45', text: 'Set up password manager across ALL devices', note: 'Laptop, phone, tablet — import existing passwords, verify working', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i46', text: 'Get M365 Personal/Family from Microsoft Store', note: 'Use employee discount while still active!', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i47', text: 'Clone all Git repos & install dev tools on new laptop', note: 'Node, Python, Git config, SSH keys, project dependencies', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i48', text: 'Ensure all personal data & services running on new laptop', note: 'OneDrive syncing, browser profiles, all accounts signed in', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i49', text: 'Full end-to-end test: build, run, push projects', note: 'Can you do everything on new laptop that you do on current one?', priority: 'high', done: false, phase: 'wk3' },
     ]
   },
   {
     id: 'cat-3', name: '💰 Benefits & Finance', collapsed: false,
     items: [
-      { id: 'i11', text: 'Confirm VRP payout timeline & amounts', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i12', text: 'Check remaining PTO — use it or verify payout', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i13', text: 'Download pay stubs / W-2 history from MyPay', note: 'Won\'t have access after Jul 1', priority: 'high', done: false, phase: 'now' },
-      { id: 'i14', text: 'ESPP — verify final purchase & withdrawal plan', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i15', text: 'RSU — check unvested grants & VRP treatment', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i16', text: 'Use employee discounts before they expire', note: 'Microsoft Store, software, hardware — goes away Jul 1', priority: 'high', done: false, phase: 'now' },
+      { id: 'i11', text: 'Confirm VRP payout timeline & amounts', note: '', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i12', text: 'Check remaining PTO — use it or verify payout', note: '', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i13', text: 'Download pay stubs / W-2 history from MyPay', note: 'Won\'t have access after Jul 1', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i14', text: 'ESPP — verify final purchase & withdrawal plan', note: '', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i15', text: 'RSU — check unvested grants & VRP treatment', note: '', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i16', text: 'Use employee discounts before they expire', note: 'Microsoft Store, hardware, software — goes away Jul 1', priority: 'high', done: false, phase: 'wk2' },
       { id: 'i17', text: '401k — note rollover options & timeline', note: 'Fidelity → personal IRA or leave in plan', priority: 'medium', done: false, phase: 'india' },
       { id: 'i18', text: 'HSA — confirm balance & next steps', note: '', priority: 'medium', done: false, phase: 'india' },
-      { id: 'i19', text: 'Health insurance — COBRA vs. marketplace decision', note: 'COBRA window: Jul 2 – Aug 31. Can enroll retroactively within 60 days.', priority: 'medium', done: false, phase: 'india' },
+      { id: 'i19', text: 'Health insurance — COBRA vs. marketplace decision', note: 'COBRA window: Jul 2 – Aug 31. 60-day retroactive enrollment.', priority: 'medium', done: false, phase: 'india' },
       { id: 'i20', text: 'Life/disability insurance — check portability', note: 'Usually 30 days from termination to convert', priority: 'medium', done: false, phase: 'india' },
     ]
   },
   {
     id: 'cat-4', name: '🔑 Access & Subscriptions', collapsed: false,
     items: [
-      { id: 'i21', text: 'List ALL services using @microsoft.com login', note: 'GitHub, Azure, conferences, newsletters, etc.', priority: 'high', done: false, phase: 'now' },
-      { id: 'i22', text: 'Migrate GitHub repos/orgs to personal account', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i23', text: 'Update email on personal subscriptions using corp email', note: '', priority: 'high', done: false, phase: 'now' },
-      { id: 'i24', text: 'Azure subscriptions — move personal resources off corp account', note: '', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i25', text: 'Export LinkedIn connections data', note: 'Settings → Data Privacy → Get a copy', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i26', text: 'Screenshot/save app licenses linked to corp email', note: '', priority: 'low', done: false, phase: 'now' },
+      { id: 'i21', text: 'List ALL services using @microsoft.com login', note: 'GitHub, Azure, conferences, newsletters, etc.', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i22', text: 'Migrate GitHub repos/orgs to personal account', note: '', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i23', text: 'Update email on personal subscriptions using corp email', note: '', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i24', text: 'Azure subscriptions — move personal resources off corp account', note: '', priority: 'medium', done: false, phase: 'wk2' },
+      { id: 'i25', text: 'Export LinkedIn connections data', note: 'Settings → Data Privacy → Get a copy', priority: 'medium', done: false, phase: 'wk1' },
+      { id: 'i26', text: 'Screenshot/save app licenses linked to corp email', note: '', priority: 'low', done: false, phase: 'wk2' },
     ]
   },
   {
     id: 'cat-5', name: '🤝 People & Goodbye', collapsed: false,
     items: [
-      { id: 'i27', text: 'Save personal contact info for close colleagues', note: 'Personal emails, phone numbers — no Teams after Jul 1', priority: 'high', done: false, phase: 'now' },
-      { id: 'i28', text: 'Complete any required KT documentation', note: '', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i29', text: 'Send goodbye messages / farewell chats', note: '', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i30', text: 'Request LinkedIn recommendations', note: 'While context is fresh in people\'s minds', priority: 'low', done: false, phase: 'now' },
-      { id: 'i31', text: 'Write thank-you notes to key people', note: '', priority: 'low', done: false, phase: 'now' },
+      { id: 'i27', text: 'Save personal contact info for close colleagues', note: 'Personal emails, phone numbers — no Teams after Jul 1', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i28', text: 'Complete any required KT documentation', note: '', priority: 'medium', done: false, phase: 'wk2' },
+      { id: 'i29', text: 'Send goodbye messages / farewell chats', note: '', priority: 'medium', done: false, phase: 'wk3' },
+      { id: 'i30', text: 'Request LinkedIn recommendations', note: 'While context is fresh in people\'s minds', priority: 'low', done: false, phase: 'wk2' },
+      { id: 'i31', text: 'Write thank-you notes to key people', note: '', priority: 'low', done: false, phase: 'wk3' },
     ]
   },
   {
     id: 'cat-6', name: '📋 Admin & Legal', collapsed: false,
     items: [
-      { id: 'i32', text: 'Elect VRP participation', note: 'Deadline: Jun 8, 11:59 PM PT (TODAY!)', priority: 'high', done: false, phase: 'now' },
-      { id: 'i33', text: 'Sign separation agreement', note: 'Deadline: Jun 22, 11:59 PM PT', priority: 'high', done: false, phase: 'now' },
-      { id: 'i34', text: 'Read & understand non-compete / non-solicit terms', note: 'Before signing — know what you\'re agreeing to', priority: 'high', done: false, phase: 'now' },
-      { id: 'i35', text: 'Confirm last day (Jul 1) & termination date (Jul 2)', note: '', priority: 'medium', done: false, phase: 'now' },
-      { id: 'i36', text: 'Update mailing address in HR system', note: 'So final docs/checks go to right place', priority: 'low', done: false, phase: 'now' },
-    ]
-  },
-  {
-    id: 'cat-7', name: '✈️ Pre-India Final Prep', collapsed: false,
-    items: [
-      { id: 'i37', text: 'Verify ALL corp-network tasks are complete', note: 'VPN, internal tools — no access from India', priority: 'high', done: false, phase: 'pre-trip' },
-      { id: 'i38', text: 'Set OOF / auto-reply on Outlook', note: '', priority: 'medium', done: false, phase: 'pre-trip' },
-      { id: 'i39', text: 'Download offline copies of needed docs', note: 'Internet may be spotty in India', priority: 'medium', done: false, phase: 'pre-trip' },
-      { id: 'i50', text: 'Verify new laptop fully ready — this is your machine now', note: 'All tools, all accounts, all projects working', priority: 'high', done: false, phase: 'pre-trip' },
+      { id: 'i32', text: 'Elect VRP participation', note: 'Deadline: Jun 8, 11:59 PM PT', priority: 'high', done: false, phase: 'wk1' },
+      { id: 'i33', text: 'Sign separation agreement', note: 'Deadline: Jun 22, 11:59 PM PT', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i34', text: 'Read & understand non-compete / non-solicit terms', note: 'Before signing — know what you\'re agreeing to', priority: 'high', done: false, phase: 'wk2' },
+      { id: 'i35', text: 'Confirm last day (Jul 1) & termination date (Jul 2)', note: '', priority: 'medium', done: false, phase: 'wk2' },
+      { id: 'i36', text: 'Update mailing address in HR system', note: 'So final docs/checks go to right place', priority: 'low', done: false, phase: 'wk2' },
     ]
   }
 ];
@@ -421,10 +413,11 @@ function renderCategories() {
 
 function renderTimeline() {
   const phases = [
-    { id: 'now', label: '🚨 NOW – Jun 24', note: 'Must do while you have corp access & are physically here', cls: 'phase-now' },
-    { id: 'pre-trip', label: '✈️ Jun 22–24 · Final Prep', note: 'Last 2 days — verify everything, return devices, go', cls: 'phase-pre-trip' },
-    { id: 'india', label: '🇮🇳 Jun 25 – Jul 23 · India (remote)', note: 'Digital only. Sign rescind by Jun 29 if needed. Last MS day Jul 1. COBRA opens Jul 2.', cls: 'phase-india' },
-    { id: 'post', label: '🏠 Jul 23+ · Back Home', note: 'COBRA enrollment (deadline Aug 31), finalize setup, settle into new normal', cls: 'phase-post' },
+    { id: 'wk1', label: '🔴 Week 1: Jun 8–14 (THIS WEEK)', note: 'Critical setup & backups — do these first', cls: 'phase-wk1' },
+    { id: 'wk2', label: '🟠 Week 2: Jun 15–21', note: 'Migrate accounts, sign agreement (Jun 22 deadline), verify new setup', cls: 'phase-wk2' },
+    { id: 'wk3', label: '🟡 Week 3: Jun 22–24 (last 3 days!)', note: 'Final verification, return devices, goodbyes, pack up', cls: 'phase-wk3' },
+    { id: 'india', label: '🇮🇳 India: Jun 25 – Jul 23', note: 'Remote/digital only. Jul 1 = last day. COBRA window opens Jul 2.', cls: 'phase-india' },
+    { id: 'post', label: '🏠 Back Home: Jul 23+', note: 'Finalize insurance, settle in, new normal', cls: 'phase-post' },
   ];
 
   let allItems = [];
@@ -436,19 +429,19 @@ function renderTimeline() {
 
   let html = '';
   phases.forEach(phase => {
-    const items = allItems.filter(i => (i.phase || 'now') === phase.id);
+    const items = allItems.filter(i => (i.phase || 'wk1') === phase.id);
     const done = items.filter(i => i.done).length;
     const pending = items.length - done;
 
     html += `<div class="timeline-phase">`;
     html += `<div class="phase-header ${phase.cls}">
       <div><span>${phase.label}</span><div class="phase-note">${phase.note}</div></div>
-      <span class="phase-count">${done}/${items.length} done${pending > 0 ? ' · ' + pending + ' left' : ' ✓'}</span>
+      <span class="phase-count">${done}/${items.length}${pending > 0 ? ' · ' + pending + ' left' : ' ✓'}</span>
     </div>`;
     html += `<div class="category-items" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;">`;
 
     if (items.length === 0) {
-      html += `<div class="item"><div class="item-content"><div class="item-note">No items in this phase yet</div></div></div>`;
+      html += `<div class="item"><div class="item-content"><div class="item-note">Nothing scheduled this week</div></div></div>`;
     } else {
       const prioOrder = { high: 0, medium: 1, low: 2 };
       items.sort((a, b) => {
@@ -499,7 +492,7 @@ function addItem(catId) {
   if (!text) return;
   const cat = data.find(c => c.id === catId);
   if (cat) {
-    cat.items.push({ id: 'i' + Date.now(), text, note: '', priority: 'medium', done: false, phase: 'now' });
+    cat.items.push({ id: 'i' + Date.now(), text, note: '', priority: 'medium', done: false, phase: 'wk1' });
     input.value = '';
     save();
   }
@@ -516,7 +509,7 @@ function editItem(catId, itemId) {
   document.getElementById('modalText').value = item.text;
   document.getElementById('modalNote').value = item.note || '';
   document.getElementById('modalPriority').value = item.priority;
-  document.getElementById('modalPhase').value = item.phase || 'now';
+  document.getElementById('modalPhase').value = item.phase || 'wk1';
   document.getElementById('editModal').classList.add('active');
 }
 
@@ -556,7 +549,7 @@ function clearDone() {
 }
 
 function resetData() {
-  if (!confirm('Reset everything to defaults? This will ERASE your current check marks and any items you added.')) return;
+  if (!confirm('Reset everything to defaults? This will ERASE your check marks and any items you added.')) return;
   localStorage.removeItem(STORAGE_KEY);
   data = JSON.parse(JSON.stringify(DEFAULT_DATA));
   save();
