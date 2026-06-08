@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>MS Log-Off Checklist</title>
+<style>
+:root {
+  --primary: #1e40af;
+  --primary-light: #3b82f6;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --done: #16a34a;
+  --urgent: #dc2626;
+  --warning: #d97706;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 4rem; }
+header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white; padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+header h1 { font-size: 1.4rem; font-weight: 600; }
+header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
+.progress-bar { background: rgba(255,255,255,0.2); border-radius: 99px; height: 8px; margin-top: 0.75rem; overflow: hidden; }
+.progress-fill { background: #34d399; height: 100%; border-radius: 99px; transition: width 0.3s; }
+.progress-text { font-size: 0.8rem; opacity: 0.85; margin-top: 0.3rem; }
+
+.container { max-width: 800px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+.controls { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.controls button {
+  padding: 0.5rem 1rem; border: 1px solid var(--border); background: var(--card);
+  border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text);
+  transition: all 0.15s;
+}
+.controls button:hover { background: #f1f5f9; }
+.controls button.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.category { margin-bottom: 2rem; }
+.category-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 1rem; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px 8px 0 0; cursor: pointer;
+}
+.category-header h2 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.category-header .count { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+.category-header .toggle { font-size: 1.2rem; color: var(--muted); transition: transform 0.2s; }
+.category.collapsed .toggle { transform: rotate(-90deg); }
+.category.collapsed .category-items { display: none; }
+
+.category-items {
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 8px 8px; overflow: hidden;
+}
+.item {
+  display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border); background: var(--card); transition: background 0.15s;
+}
+.item:last-child { border-bottom: none; }
+.item:hover { background: #f8fafc; }
+.item.done { opacity: 0.6; }
+.item.done .item-text { text-decoration: line-through; }
+
+.item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--done); flex-shrink: 0; }
+.item-content { flex: 1; min-width: 0; }
+.item-text { font-size: 0.9rem; }
+.item-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+.item-actions { display: flex; gap: 0.25rem; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+.item:hover .item-actions { opacity: 1; }
+.item-actions button {
+  background: none; border: none; cursor: pointer; font-size: 0.85rem; padding: 0.25rem 0.4rem;
+  border-radius: 4px; color: var(--muted);
+}
+.item-actions button:hover { background: #f1f5f9; color: var(--text); }
+.item-actions .delete-btn:hover { color: var(--urgent); }
+
+.priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.priority-high { background: var(--urgent); }
+.priority-medium { background: var(--warning); }
+.priority-low { background: #94a3b8; }
+
+.add-item {
+  display: flex; gap: 0.5rem; padding: 0.5rem 1rem; border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 8px 8px; background: #f8fafc;
+}
+.add-item input {
+  flex: 1; border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.6rem;
+  font-size: 0.85rem; outline: none;
+}
+.add-item input:focus { border-color: var(--primary-light); }
+.add-item button {
+  background: var(--primary); color: white; border: none; border-radius: 4px;
+  padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem;
+}
+
+.add-category {
+  text-align: center; margin-top: 1rem;
+}
+.add-category button {
+  background: none; border: 1px dashed var(--border); color: var(--muted);
+  padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+}
+.add-category button:hover { border-color: var(--primary-light); color: var(--primary); }
+
+.footer-actions {
+  position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+  border-top: 1px solid var(--border); padding: 0.6rem 1rem;
+  display: flex; justify-content: center; gap: 0.75rem;
+}
+.footer-actions button {
+  padding: 0.4rem 0.8rem; border: 1px solid var(--border); background: var(--card);
+  border-radius: 6px; cursor: pointer; font-size: 0.8rem; color: var(--muted);
+}
+.footer-actions button:hover { background: #f1f5f9; color: var(--text); }
+
+/* Modal */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--card); border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal h3 { margin-bottom: 1rem; font-size: 1rem; }
+.modal label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.25rem; margin-top: 0.75rem; }
+.modal input, .modal select, .modal textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem;
+  font-size: 0.9rem; outline: none;
+}
+.modal textarea { resize: vertical; min-height: 60px; }
+.modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--primary-light); }
+.modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.25rem; }
+.modal-actions button { padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; border: none; }
+.modal-actions .btn-cancel { background: #f1f5f9; color: var(--text); }
+.modal-actions .btn-save { background: var(--primary); color: white; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MS Log-Off Checklist</h1>
+  <p>Everything to do before last day — don't miss a thing</p>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText"></div>
+</header>
+
+<div class="container">
+  <div class="controls">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="pending">Pending</button>
+    <button data-filter="done">Done</button>
+  </div>
+  <div id="checklist"></div>
+  <div class="add-category">
+    <button onclick="addCategory()">+ Add Category</button>
+  </div>
+</div>
+
+<div class="footer-actions">
+  <button onclick="exportData()">📋 Export JSON</button>
+  <button onclick="importData()">📥 Import JSON</button>
+  <button onclick="clearDone()">🗑️ Clear Done</button>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3 id="modalTitle">Edit Item</h3>
+    <label>Task</label>
+    <input type="text" id="modalText" placeholder="What needs to be done?">
+    <label>Note (optional)</label>
+    <textarea id="modalNote" placeholder="Additional details, links, etc."></textarea>
+    <label>Priority</label>
+    <select id="modalPriority">
+      <option value="high">🔴 High — do before India trip</option>
+      <option value="medium">🟡 Medium — before last day</option>
+      <option value="low">⚪ Low — nice to have</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'ms-logoff-checklist-v1';
+
+const DEFAULT_DATA = [
+  {
+    id: 'cat-1', name: '💻 IT & Accounts', collapsed: false,
+    items: [
+      { id: 'i1', text: 'Back up OneDrive files to personal storage', note: 'Photos, personal docs, anything not on personal drives', priority: 'high', done: false },
+      { id: 'i2', text: 'Export OneNote notebooks (personal sections)', note: '', priority: 'high', done: false },
+      { id: 'i3', text: 'Export browser bookmarks & saved passwords', note: 'Edge profile → export to personal browser', priority: 'high', done: false },
+      { id: 'i4', text: 'Download any personal emails/attachments', note: 'Outlook — anything personal you want to keep', priority: 'medium', done: false },
+      { id: 'i5', text: 'Remove personal accounts from work device', note: 'Personal Google, Apple, etc.', priority: 'medium', done: false },
+      { id: 'i6', text: 'Export LinkedIn connections (if using corp login)', note: 'Settings → Data Privacy → Get a copy', priority: 'medium', done: false },
+      { id: 'i7', text: 'Screenshot/save any app licenses linked to corp email', note: '', priority: 'low', done: false },
+      { id: 'i8', text: 'Return laptop & equipment', note: '', priority: 'medium', done: false },
+    ]
+  },
+  {
+    id: 'cat-2', name: '💰 Benefits & Finance', collapsed: false,
+    items: [
+      { id: 'i9', text: 'Confirm VRP payout timeline & amounts', note: '', priority: 'high', done: false },
+      { id: 'i10', text: 'Check remaining PTO — use or verify payout', note: '', priority: 'high', done: false },
+      { id: 'i11', text: 'Download pay stubs / W-2 history from MyPay', note: 'Won\'t have access after departure', priority: 'high', done: false },
+      { id: 'i12', text: 'ESPP — verify final purchase & withdrawal plan', note: '', priority: 'high', done: false },
+      { id: 'i13', text: 'RSU — check any unvested grants & VRP treatment', note: '', priority: 'high', done: false },
+      { id: 'i14', text: '401k — note rollover options & timeline', note: 'Fidelity → personal IRA or leave in plan', priority: 'medium', done: false },
+      { id: 'i15', text: 'HSA — confirm balance, set up personal contributions if stopping', note: '', priority: 'medium', done: false },
+      { id: 'i16', text: 'Health insurance — COBRA vs. marketplace decision', note: 'COBRA retroactive enrollment window = 60 days', priority: 'medium', done: false },
+      { id: 'i17', text: 'Life/disability insurance — portability options', note: 'Usually 30 days to convert', priority: 'medium', done: false },
+      { id: 'i18', text: 'Employee discount programs — use remaining (Microsoft Store, etc.)', note: '', priority: 'low', done: false },
+    ]
+  },
+  {
+    id: 'cat-3', name: '🤝 People & Knowledge Transfer', collapsed: false,
+    items: [
+      { id: 'i19', text: 'Save personal contact info for close colleagues', note: 'Personal emails, phone numbers — won\'t have Teams later', priority: 'high', done: false },
+      { id: 'i20', text: 'Complete any required KT documentation', note: '', priority: 'medium', done: false },
+      { id: 'i21', text: 'Send goodbye messages / schedule farewell chats', note: '', priority: 'medium', done: false },
+      { id: 'i22', text: 'Request LinkedIn recommendations while context is fresh', note: '', priority: 'medium', done: false },
+      { id: 'i23', text: 'Write thank-you notes to key people', note: '', priority: 'low', done: false },
+    ]
+  },
+  {
+    id: 'cat-4', name: '✈️ India Trip Prep (time-sensitive)', collapsed: false,
+    items: [
+      { id: 'i24', text: 'Ensure all critical MS tasks done BEFORE departure', note: 'Anything that needs corp network/VPN', priority: 'high', done: false },
+      { id: 'i25', text: 'Set up auto-reply / OOF with departure context', note: '', priority: 'medium', done: false },
+      { id: 'i26', text: 'Verify nothing requires physical presence after trip', note: 'Equipment return, badge, etc.', priority: 'high', done: false },
+      { id: 'i27', text: 'Download offline copies of any needed docs', note: 'Internet may be spotty', priority: 'medium', done: false },
+    ]
+  },
+  {
+    id: 'cat-5', name: '📋 Admin & Legal', collapsed: false,
+    items: [
+      { id: 'i28', text: 'Review & sign separation agreement (if required)', note: '', priority: 'high', done: false },
+      { id: 'i29', text: 'Understand non-compete / non-solicit terms', note: '', priority: 'high', done: false },
+      { id: 'i30', text: 'Confirm last day & official separation date', note: '', priority: 'high', done: false },
+      { id: 'i31', text: 'Update emergency contacts & address in HR system', note: 'So final docs go to right place', priority: 'low', done: false },
+      { id: 'i32', text: 'Return badge & any physical access items', note: '', priority: 'medium', done: false },
+    ]
+  },
+  {
+    id: 'cat-6', name: '🔑 Access & Subscriptions Tied to MS', collapsed: false,
+    items: [
+      { id: 'i33', text: 'List services using @microsoft.com as login', note: 'GitHub, Azure, conferences, newsletters...', priority: 'high', done: false },
+      { id: 'i34', text: 'Migrate GitHub repos / orgs to personal account', note: '', priority: 'high', done: false },
+      { id: 'i35', text: 'Update email on any personal subscriptions using corp email', note: '', priority: 'high', done: false },
+      { id: 'i36', text: 'Azure subscriptions — check for personal resources on corp account', note: '', priority: 'medium', done: false },
+      { id: 'i37', text: 'VS Code / Copilot — set up personal license if continuing', note: '', priority: 'medium', done: false },
+    ]
+  }
+];
+
+let data = loadData();
+let currentFilter = 'all';
+let editingItem = null;
+let editingCategory = null;
+
+function loadData() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try { return JSON.parse(stored); } catch(e) {}
+  }
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  render();
+}
+
+function render() {
+  const container = document.getElementById('checklist');
+  let totalItems = 0, doneItems = 0;
+
+  let html = '';
+  data.forEach(cat => {
+    const catItems = cat.items.filter(item => {
+      if (currentFilter === 'pending') return !item.done;
+      if (currentFilter === 'done') return item.done;
+      return true;
+    });
+
+    totalItems += cat.items.length;
+    doneItems += cat.items.filter(i => i.done).length;
+    const catDone = cat.items.filter(i => i.done).length;
+
+    html += `<div class="category ${cat.collapsed ? 'collapsed' : ''}">`;
+    html += `<div class="category-header" onclick="toggleCategory('${cat.id}')">
+      <h2>${cat.name} <span class="count">${catDone}/${cat.items.length}</span></h2>
+      <span class="toggle">▼</span>
+    </div>`;
+    html += `<div class="category-items">`;
+
+    catItems.forEach(item => {
+      html += `<div class="item ${item.done ? 'done' : ''}">
+        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleItem('${cat.id}','${item.id}')">
+        <span class="priority-dot priority-${item.priority}"></span>
+        <div class="item-content">
+          <div class="item-text">${escHtml(item.text)}</div>
+          ${item.note ? `<div class="item-note">${escHtml(item.note)}</div>` : ''}
+        </div>
+        <div class="item-actions">
+          <button onclick="editItem('${cat.id}','${item.id}')" title="Edit">✏️</button>
+          <button class="delete-btn" onclick="deleteItem('${cat.id}','${item.id}')" title="Delete">✕</button>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+    html += `<div class="add-item">
+      <input type="text" placeholder="Add item..." id="add-${cat.id}" onkeydown="if(event.key==='Enter')addItem('${cat.id}')">
+      <button onclick="addItem('${cat.id}')">+</button>
+    </div>`;
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Progress
+  const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${doneItems} of ${totalItems} done (${pct}%)`;
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function toggleCategory(catId) {
+  const cat = data.find(c => c.id === catId);
+  if (cat) { cat.collapsed = !cat.collapsed; save(); }
+}
+
+function toggleItem(catId, itemId) {
+  const cat = data.find(c => c.id === catId);
+  if (cat) {
+    const item = cat.items.find(i => i.id === itemId);
+    if (item) { item.done = !item.done; save(); }
+  }
+}
+
+function addItem(catId) {
+  const input = document.getElementById('add-' + catId);
+  const text = input.value.trim();
+  if (!text) return;
+  const cat = data.find(c => c.id === catId);
+  if (cat) {
+    cat.items.push({ id: 'i' + Date.now(), text, note: '', priority: 'medium', done: false });
+    input.value = '';
+    save();
+  }
+}
+
+function editItem(catId, itemId) {
+  const cat = data.find(c => c.id === catId);
+  if (!cat) return;
+  const item = cat.items.find(i => i.id === itemId);
+  if (!item) return;
+  editingItem = item;
+  editingCategory = catId;
+  document.getElementById('modalTitle').textContent = 'Edit Item';
+  document.getElementById('modalText').value = item.text;
+  document.getElementById('modalNote').value = item.note || '';
+  document.getElementById('modalPriority').value = item.priority;
+  document.getElementById('editModal').classList.add('active');
+}
+
+function deleteItem(catId, itemId) {
+  const cat = data.find(c => c.id === catId);
+  if (cat) { cat.items = cat.items.filter(i => i.id !== itemId); save(); }
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('active');
+  editingItem = null;
+}
+
+function saveModal() {
+  if (editingItem) {
+    editingItem.text = document.getElementById('modalText').value.trim();
+    editingItem.note = document.getElementById('modalNote').value.trim();
+    editingItem.priority = document.getElementById('modalPriority').value;
+    save();
+  }
+  closeModal();
+}
+
+function addCategory() {
+  const name = prompt('Category name (with emoji if you like):');
+  if (!name) return;
+  data.push({ id: 'cat-' + Date.now(), name, collapsed: false, items: [] });
+  save();
+}
+
+function clearDone() {
+  if (!confirm('Remove all completed items?')) return;
+  data.forEach(cat => { cat.items = cat.items.filter(i => !i.done); });
+  data = data.filter(cat => cat.items.length > 0);
+  save();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ms-logoff-checklist-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (Array.isArray(imported)) { data = imported; save(); }
+      } catch(err) { alert('Invalid file'); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+// Filter buttons
+document.querySelectorAll('.controls button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
