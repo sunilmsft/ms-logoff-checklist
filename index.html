@@ -131,10 +131,14 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
 
 /* Timeline view */
 .timeline-phase { margin-bottom: 2rem; }
+.timeline-phase.collapsed .phase-items { display: none; }
+.timeline-phase.collapsed .phase-header { border-radius: 8px; }
+.timeline-phase.collapsed .phase-toggle { transform: rotate(-90deg); }
 .phase-header {
   padding: 0.6rem 1rem; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 0.9rem;
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: space-between; align-items: center; cursor: pointer;
 }
+.phase-toggle { font-size: 1.1rem; opacity: 0.6; transition: transform 0.2s; margin-right: 0.5rem; }
 .phase-header .phase-count { font-weight: 400; font-size: 0.78rem; opacity: 0.8; }
 .phase-note { font-size: 0.76rem; font-weight: 400; opacity: 0.75; margin-top: 0.1rem; }
 .phase-wk1 { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
@@ -346,6 +350,7 @@ let currentFilter = 'all';
 let currentView = 'categories';
 let editingItem = null;
 let editingCategory = null;
+let collapsedPhases = JSON.parse(localStorage.getItem('ms-logoff-collapsed-phases') || '{}');
 
 function loadData() {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -433,13 +438,14 @@ function renderTimeline() {
     const items = allItems.filter(i => (i.phase || 'wk1') === phase.id);
     const done = items.filter(i => i.done).length;
     const pending = items.length - done;
+    const isCollapsed = collapsedPhases[phase.id] || false;
 
-    html += `<div class="timeline-phase">`;
-    html += `<div class="phase-header ${phase.cls}">
-      <div><span>${phase.label}</span><div class="phase-note">${phase.note}</div></div>
+    html += `<div class="timeline-phase ${isCollapsed ? 'collapsed' : ''}">`;
+    html += `<div class="phase-header ${phase.cls}" onclick="togglePhase('${phase.id}')">
+      <div style="display:flex;align-items:center;"><span class="phase-toggle">▼</span><div><span>${phase.label}</span><div class="phase-note">${phase.note}</div></div></div>
       <span class="phase-count">${done}/${items.length}${pending > 0 ? ' · ' + pending + ' left' : ' ✓'}</span>
     </div>`;
-    html += `<div class="category-items" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;">`;
+    html += `<div class="phase-items" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;">`;
 
     if (items.length === 0) {
       html += `<div class="item"><div class="item-content"><div class="item-note">Nothing scheduled this week</div></div></div>`;
@@ -473,6 +479,12 @@ function renderItem(catId, item) {
 }
 
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function togglePhase(phaseId) {
+  collapsedPhases[phaseId] = !collapsedPhases[phaseId];
+  localStorage.setItem('ms-logoff-collapsed-phases', JSON.stringify(collapsedPhases));
+  render();
+}
 
 function toggleCategory(catId) {
   const cat = data.find(c => c.id === catId);
