@@ -19,7 +19,7 @@
   --warning: #d97706;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 4rem; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
 header {
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: white; padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 100;
@@ -108,16 +108,17 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
 }
 .add-category button:hover { border-color: var(--primary-light); color: var(--primary); }
 
-.footer-actions {
-  position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
-  border-top: 1px solid var(--border); padding: 0.6rem 1rem;
+.toolbar {
+  position: sticky; top: 0; z-index: 99; background: var(--card);
+  border-bottom: 1px solid var(--border); padding: 0.6rem 1rem;
   display: flex; justify-content: center; gap: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
-.footer-actions button {
-  padding: 0.4rem 0.8rem; border: 1px solid var(--border); background: var(--card);
-  border-radius: 6px; cursor: pointer; font-size: 0.8rem; color: var(--muted);
+.toolbar button {
+  padding: 0.45rem 0.9rem; border: 1px solid var(--border); background: var(--card);
+  border-radius: 6px; cursor: pointer; font-size: 0.82rem; color: var(--text); font-weight: 500;
 }
-.footer-actions button:hover { background: #f1f5f9; color: var(--text); }
+.toolbar button:hover { background: #f1f5f9; border-color: var(--primary-light); }
 
 /* Modal */
 .modal-overlay {
@@ -165,11 +166,17 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
   <div class="progress-text" id="progressText"></div>
 </header>
 
+<div class="toolbar">
+  <button onclick="exportData()">📋 Export JSON</button>
+  <button onclick="importData()">📥 Import JSON</button>
+  <button onclick="clearDone()">🗑️ Clear Done</button>
+</div>
+
 <div class="container">
   <div class="sync-notice" id="syncNotice">
     <span class="icon">💡</span>
     <div class="text">
-      <strong>How this works:</strong> Your checked items are saved in this browser only. To sync between devices, use <strong>Export JSON</strong> (bottom of page) to save your progress, then <strong>Import JSON</strong> on the other device. Priorities: 🔴 = do before India trip, 🟡 = before last day, ⚪ = nice to have.
+      <strong>How this works:</strong> Your checked items are saved in this browser only. To sync between devices, use <strong>Export JSON</strong> above to save your progress, then <strong>Import JSON</strong> on the other device. Priorities: 🔴 = do before India trip, 🟡 = before last day, ⚪ = nice to have.
     </div>
     <button class="dismiss" onclick="dismissNotice()" title="Dismiss">✕</button>
   </div>
@@ -184,11 +191,7 @@ header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem; }
   </div>
 </div>
 
-<div class="footer-actions">
-  <button onclick="exportData()">📋 Export JSON</button>
-  <button onclick="importData()">📥 Import JSON</button>
-  <button onclick="clearDone()">🗑️ Clear Done</button>
-</div>
+
 
 <!-- Edit Modal -->
 <div class="modal-overlay" id="editModal">
